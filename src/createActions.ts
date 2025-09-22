@@ -655,24 +655,24 @@ export const createActions = (
             description:
               "Select options with matching value attribute. Can be a string or an array for multi-select.",
             items: {
-              type: "string"
-            }
+              type: "string",
+            },
           },
           label: {
             type: ["string", "array"],
             description:
               "Select options with matching visible text. Can be a string or an array for multi-select.",
             items: {
-              type: "string"
-            }
+              type: "string",
+            },
           },
           index: {
             type: ["number", "array"],
             description:
               "Select options by their index (zero-based). Can be a number or an array for multi-select.",
             items: {
-              type: "number"
-            }
+              type: "number",
+            },
           },
         },
       },
