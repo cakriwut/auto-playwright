@@ -7,10 +7,17 @@ export type Test = TestType<any, any>;
 export type StepOptions = {
   debug?: boolean;
   model?: string;
+  provider?: "openai" | "bedrock";
+  // OpenAI options
   openaiApiKey?: string;
   openaiBaseUrl?: string;
   openaiDefaultQuery?: {};
   openaiDefaultHeaders?: {};
+  // AWS Bedrock options
+  awsRegion?: string;
+  awsAccessKeyId?: string;
+  awsSecretAccessKey?: string;
+  awsSessionToken?: string;
 };
 
 export type TaskMessage = {

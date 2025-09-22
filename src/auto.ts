@@ -51,17 +51,27 @@ async function runTask(
     );
   }
 
+  const defaultModel =
+    options?.provider === "bedrock" ? "claude-3-5-sonnet" : "gpt-4o";
+
   const result = await completeTask(page, {
     task,
     snapshot: await getSnapshot(page),
     options: options
       ? {
-          model: options.model ?? "gpt-4o",
+          model: options.model ?? defaultModel,
           debug: options.debug ?? false,
+          provider: options.provider ?? "openai",
+          // OpenAI options
           openaiApiKey: options.openaiApiKey,
           openaiBaseUrl: options.openaiBaseUrl,
           openaiDefaultQuery: options.openaiDefaultQuery,
           openaiDefaultHeaders: options.openaiDefaultHeaders,
+          // AWS Bedrock options
+          awsRegion: options.awsRegion,
+          awsAccessKeyId: options.awsAccessKeyId,
+          awsSecretAccessKey: options.awsSecretAccessKey,
+          awsSessionToken: options.awsSessionToken,
         }
       : undefined,
   });

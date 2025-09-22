@@ -10,11 +10,25 @@ Run Playwright tests using AI.
 npm install auto-playwright -D
 ```
 
-2. This package relies on talking with OpenAI (https://openai.com/). You must export the API token as an enviroment variable or add it to your `.env` file:
+2. This package supports OpenAI and Amazon Bedrock as LLM providers:
 
-```bash
-export OPENAI_API_KEY='sk-..."
-```
+   **For OpenAI:** Export the API token as an environment variable or add it to your `.env` file:
+   ```bash
+   export OPENAI_API_KEY='sk-..."
+   ```
+
+   **For Amazon Bedrock:** Configure AWS credentials using one of the following methods:
+   ```bash
+   # Option 1: Environment variables
+   export AWS_REGION='us-east-1'
+   export AWS_ACCESS_KEY_ID='your-access-key-id'
+   export AWS_SECRET_ACCESS_KEY='your-secret-access-key'
+   
+   # Option 2: Use AWS CLI configuration
+   aws configure
+   
+   # Option 3: Use IAM roles (recommended for EC2/Lambda)
+   ```
 
 3. Import and use the `auto` function:
 
@@ -66,6 +80,48 @@ const options: StepOptions = {
 };
 
 test("auto Playwright example", async ({ page }) => {
+  await page.goto("/");
+
+  // `auto` can query data
+  // In this case, the result is plain-text contents of the header
+  const headerText = await auto("get the header text", { page, test }, options);
+
+  // `auto` can perform actions
+  // In this case, auto will find and fill in the search text input
+  await auto(`Type "${headerText}" in the search box`, { page, test }, options);
+
+  // `auto` can assert the state of the website
+  // In this case, the result is a boolean outcome
+  const searchInputHasHeaderText = await auto(
+    `Is the contents of the search box equal to "${headerText}"?`,
+    { page, test },
+    options,
+  );
+
+  expect(searchInputHasHeaderText).toBe(true);
+});
+```
+
+### Setup with Amazon Bedrock
+
+Include the StepOptions type with the values needed for connecting to Amazon Bedrock.
+
+```ts
+import { test, expect } from "@playwright/test";
+import { auto } from "auto-playwright";
+import { StepOptions } from "../src/types";
+
+const options: StepOptions = {
+  provider: "bedrock",
+  model: "claude-3-5-sonnet", // or claude-3-haiku, claude-3-opus, etc.
+  awsRegion: "us-east-1", // or your preferred AWS region
+  // AWS credentials (optional if using IAM roles or other AWS credential methods)
+  awsAccessKeyId: "your-access-key-id",
+  awsSecretAccessKey: "your-secret-access-key",
+  // awsSessionToken: "your-session-token", // if using temporary credentials
+};
+
+test("auto Playwright example with Bedrock", async ({ page }) => {
   await page.goto("/");
 
   // `auto` can query data
@@ -147,10 +203,22 @@ There are additional options you can pass as a third argument:
 const options = {
   // If true, debugging information is printed in the console.
   debug: boolean,
-  // The OpenAI model (https://platform.openai.com/docs/models/overview)
-  model: "gpt-4-1106-preview",
-  // The OpenAI API key
+  // The LLM provider: "openai" (default) or "bedrock"
+  provider: "openai" | "bedrock",
+  // The model to use - depends on provider
+  // For OpenAI: "gpt-4o", "gpt-4-1106-preview", etc.
+  // For Bedrock: "claude-3-5-sonnet", "claude-3-haiku", etc.
+  model: "gpt-4o",
+  // OpenAI options (when provider is "openai")
   openaiApiKey: "sk-...",
+  openaiBaseUrl: "https://api.openai.com/v1",
+  openaiDefaultQuery: {},
+  openaiDefaultHeaders: {},
+  // AWS Bedrock options (when provider is "bedrock")
+  awsRegion: "us-east-1",
+  awsAccessKeyId: "your-access-key-id",
+  awsSecretAccessKey: "your-secret-access-key",
+  awsSessionToken: "your-session-token", // optional
 };
 
 auto("<your prompt>", { page, test }, options);
